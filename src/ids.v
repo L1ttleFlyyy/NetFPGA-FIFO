@@ -206,19 +206,23 @@ module ids
                end
             end
             PAYLOAD: begin
+                  out_wr_int_next = 1; //9.8
+                  in_pkt_body_next = 1;
                if (in_fifo_ctrl_p != 0) begin
                   state_next = CPU_PROC;
                   header_counter_next = 0;
-                  out_wr_int_next = 0; //9.8
-                  in_fifo_rd_en = 0; //9.8
+                  // out_wr_int_next = 0; //9.8
+                  // in_fifo_rd_en = 0; //9.8
                   in_pkt_body_next = 0;
                end else begin
                   in_fifo_rd_en = 1; //9.8
-                  out_wr_int_next = 1; //9.8
-                  in_pkt_body_next = 1;
+                  // out_wr_int_next = 1; //9.8
+                  // in_pkt_body_next = 1;
                end
             end
             CPU_PROC: begin //9.7
+               out_wr_int_next = 0; //9.8
+               in_pkt_body_next = 0;
                if(ids_cmd[0]) begin
                   end_of_pkt_next = 1;
                   state_next = START;
