@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+
+import socket
+import sys
+# Create a UDP socket
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server_address = ('10.1.0.3', 20480)
+if len(sys.argv) < 2:
+	message = b'Hello World!'
+else:
+	message = str.encode(sys.argv[1])
+try:
+    sent = sock.sendto(message, server_address)
+finally:
+    sock.close()

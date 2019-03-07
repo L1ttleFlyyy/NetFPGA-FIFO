@@ -1,0 +1,88 @@
+#!/usr/bin/python
+
+import subprocess, time
+
+regs = {
+	'cmd ':0x2000300,
+	'low ':0x2000308,
+	'high':0x2000304,
+	'info':0x200030c
+}
+
+data_dict = {
+	'low ':0,
+	'high':0,
+	'info':0
+}
+
+def int2hex(data):
+	data = hex(data)[2:]
+	if data.endswith("L"):
+		data = data[:-1]
+	return data.zfill(8)
+
+def int2ascii(data):
+	data = data & 0xffffffff
+	data = int2hex(data)
+	return data.decode("hex")
+
+def regread(addr):
+    process = subprocess.Popen(["regread", str(addr)], stdout=subprocess.PIPE)
+    out, err = process.communicate()
+    data = out.split()
+    return data[3]
+
+def regwrite(addr, data):
+    addr = addr & 0xffffffff
+    data = data & 0xffffffff
+    process = subprocess.Popen(["regwrite", str(addr), str(data)], stdout=subprocess.PIPE)
+    out,err = process.communicate()
+
+def readall():
+	for reg in data_dict.keys():
+		data_dict[reg] = int(regread(regs[reg]), base=16)
+
+def readmem(addr):
+	ids_cmd = ((addr & 0xff)<<24)&0xffffffff
+	ids_cmd = ids_cmd | 0x10
+	regwrite(0x2000300, ids_cmd)
+	readall()
+
+regwrite(regs['cmd '], 0) # stall the state machine
+
+while True:
+	addr_info = int(regread(regs['info']), base=16)
+	head = addr_info & 0xff
+	tail = (addr_info & 0xff00)>>8
+	if tail < head:
+		tail += 256
+	diff = tail - head
+	if diff:
+		break
+	time.sleep(0.5) # interval 500ms
+
+packet_ctrl = []
+packet_data = []
+packet_ascii = []
+
+for i in range(head, tail):
+	readmem(i)
+	packet_ctrl.append((data_dict['info']&0xff000000)>>24)
+	packet_ascii.append(int2ascii(data_dict['high'])+int2ascii(data_dict['low ']))
+	packet_data.append(int2hex(data_dict['high'])+int2hex(data_dict['low ']))
+
+print('-------------------------')
+print("packet addr: " + str(head) + " -- " + str(tail))
+print("packet length: " + str(diff))
+
+print('---------control--------')
+for i in packet_ctrl:
+	print(i)
+print('----------data----------')
+for i in packet_data:
+	print(i)
+print('----------ascii---------')
+for i in packet_ascii:
+	print(i)
+
+regwrite(regs['cmd '], 1) # release the state machine
