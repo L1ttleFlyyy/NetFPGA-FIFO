@@ -80,7 +80,6 @@ module ids
 
    // internal state
    reg [1:0]                     state, state_next;
-   reg                           in_pkt_body, in_pkt_body_next;
    reg                           end_of_pkt, end_of_pkt_next;
    reg                           begin_pkt, begin_pkt_next;
    reg [2:0]                     header_counter, header_counter_next;
@@ -179,50 +178,51 @@ module ids
       in_fifo_rd_en = 0;
       out_wr_int_next = 0;
       end_of_pkt_next = end_of_pkt;
-      in_pkt_body_next = in_pkt_body;
       begin_pkt_next = begin_pkt;
       
-      if (!in_fifo_empty && out_rdy) begin
          
          case(state)
+
             START: begin
-               out_wr_int_next = 1; //9.6
-               in_fifo_rd_en = 1; //9.6
-               if (in_fifo_ctrl_p != 0) begin
-                  state_next = HEADER;
-                  begin_pkt_next = 1;
-                  end_of_pkt_next = 0;   // takes matcher out of reset
-               end
-            end
-            HEADER: begin
-               out_wr_int_next = 1; //9.6
-               in_fifo_rd_en = 1; //9.6
-               begin_pkt_next = 0;
-               if (in_fifo_ctrl_p == 0) begin
-                  header_counter_next = header_counter + 1'b1;
-                  if (header_counter_next == 3) begin
-                    state_next = PAYLOAD;
+               if (!in_fifo_empty && out_rdy) begin
+                  out_wr_int_next = 1; //9.6
+                  in_fifo_rd_en = 1; //9.6
+                  if (in_fifo_ctrl_p != 0) begin
+                     state_next = HEADER;
+                     begin_pkt_next = 1;
+                     end_of_pkt_next = 0;   // takes matcher out of reset
                   end
                end
             end
-            PAYLOAD: begin
-                  out_wr_int_next = 1; //9.8
-                  in_pkt_body_next = 1;
-               if (in_fifo_ctrl_p != 0) begin
-                  state_next = CPU_PROC;
-                  header_counter_next = 0;
-                  // out_wr_int_next = 0; //9.8
-                  // in_fifo_rd_en = 0; //9.8
-                  in_pkt_body_next = 0;
-               end else begin
-                  in_fifo_rd_en = 1; //9.8
-                  // out_wr_int_next = 1; //9.8
-                  // in_pkt_body_next = 1;
+
+            HEADER: begin
+               if (!in_fifo_empty && out_rdy) begin
+                  out_wr_int_next = 1; //9.6
+                  in_fifo_rd_en = 1; //9.6
+                  begin_pkt_next = 0;
+                  if (in_fifo_ctrl_p == 0) begin
+                     header_counter_next = header_counter + 1'b1;
+                     if (header_counter_next == 3) begin
+                     state_next = PAYLOAD;
+                     end
+                  end
                end
             end
+
+            PAYLOAD: begin
+               if (!in_fifo_empty && out_rdy) begin
+                     out_wr_int_next = 1; //9.8
+                     in_fifo_rd_en = 1; //9.8
+                  if (in_fifo_ctrl_p != 0) begin
+                     state_next = CPU_PROC;
+                     header_counter_next = 0;
+                  end 
+               end
+            end
+            
             CPU_PROC: begin //9.7
                out_wr_int_next = 0; //9.8
-               in_pkt_body_next = 0;
+               in_fifo_rd_en = 0; //9.8
                if(ids_cmd[0]) begin
                   end_of_pkt_next = 1;
                   state_next = START;
@@ -231,7 +231,6 @@ module ids
                end
             end
          endcase // case(state)
-      end
    end // always @ (*)
    
    always @(posedge clk) begin
@@ -241,7 +240,6 @@ module ids
          state <= START;
          begin_pkt <= 0;
          end_of_pkt <= 0;
-         in_pkt_body <= 0;
 			in_fifo_ctrl <= 0;
 			in_fifo_data <= 0;
       end
@@ -250,7 +248,6 @@ module ids
          state <= state_next;
          begin_pkt <= begin_pkt_next;
          end_of_pkt <= end_of_pkt_next;
-         in_pkt_body <= in_pkt_body_next;
 			in_fifo_ctrl <= in_fifo_ctrl_p;
 			in_fifo_data <= in_fifo_data_p;
 			out_wr_int <= out_wr_int_next;
