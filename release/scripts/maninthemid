@@ -3,10 +3,12 @@
 import subprocess, time
 
 regs = {
-	'cmd ':0x2000300,
-	'low ':0x2000308,
-	'high':0x2000304,
-	'info':0x200030c
+	'cmd ':0x2000308,
+	'low ':0x2000310,
+	'high':0x200030c,
+	'info':0x2000314,
+	'cpul':0x2000304,
+	'cpuh':0x2000300
 }
 
 data_dict = {
@@ -49,7 +51,6 @@ def readmem(addr):
 	readall()
 
 regwrite(regs['cmd '], 0) # stall the state machine
-
 while True:
 	addr_info = int(regread(regs['info']), base=16)
 	head = addr_info & 0xff

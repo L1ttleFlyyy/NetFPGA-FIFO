@@ -59,8 +59,8 @@ module ids
    wire [DATA_WIDTH-1:0]         in_fifo_data_p;
    wire [CTRL_WIDTH-1:0]         in_fifo_ctrl_p;
 	
-   reg [DATA_WIDTH-1:0]         in_fifo_data;
-   reg [CTRL_WIDTH-1:0]         in_fifo_ctrl;
+   reg [DATA_WIDTH-1:0]          in_fifo_data;
+   reg [CTRL_WIDTH-1:0]          in_fifo_ctrl;
    
 
    wire                          in_fifo_nearly_full;
@@ -68,11 +68,12 @@ module ids
 
    reg                           in_fifo_rd_en;
    reg                           out_wr_int;
-
-   reg			                  out_wr_int_next;
 	
    // software registers 
+   wire [31:0]                   cpu_data_high;
+   wire [31:0]                   cpu_data_low;
    wire [31:0]                   ids_cmd;
+   
    // hardware registers
    wire [31:0]                   pattern_high;
    wire [31:0]                   pattern_low;
@@ -82,13 +83,11 @@ module ids
    reg [1:0]                     state, state_next;
    reg                           end_of_pkt, end_of_pkt_next;
    reg                           begin_pkt, begin_pkt_next;
-   reg [2:0]                     header_counter, header_counter_next;
-   reg                           counter;
 
    // local parameter
    parameter                     START = 2'b00;
-   parameter                     HEADER = 2'b01;
-   parameter                     PAYLOAD = 2'b10;
+   // parameter                     HEADER = 2'b01;
+   parameter                     PACEKT = 2'b10;
    parameter                     CPU_PROC = 2'b11;
 
  
@@ -127,7 +126,7 @@ module ids
       .raddr         (matches[7:0]),
       .waddr         (matches[15:8]),
 		.out_sram      ({matches[31:24], pattern_high, pattern_low}), // cpu in-out data
-		.in_sram       (72'haaaaaaaa), // cpu input data
+		.in_sram       ({8'b0, cpu_data_high, cpu_data_low}), // cpu input data
 		.sramwrite     (ids_cmd[8]), // 0x00000100
 		.sramaddr      (ids_cmd[31:24]), 
 		.cpu_sel      (ids_cmd[4]) // 0x00000010
@@ -139,7 +138,7 @@ module ids
       .TAG                 (`IDS_BLOCK_ADDR),          // Tag -- eg. MODULE_TAG
       .REG_ADDR_WIDTH      (`IDS_REG_ADDR_WIDTH),     // Width of block addresses -- eg. MODULE_REG_ADDR_WIDTH
       .NUM_COUNTERS        (0),                 // Number of counters
-      .NUM_SOFTWARE_REGS   (1),                 // Number of sw regs
+      .NUM_SOFTWARE_REGS   (3),                 // Number of sw regs
       .NUM_HARDWARE_REGS   (3)                  // Number of hw regs
    ) module_regs (
       .reg_req_in       (reg_req_in),
@@ -161,7 +160,7 @@ module ids
       .counter_decrement(),
 
       // --- SW regs interface
-      .software_regs    (ids_cmd),
+      .software_regs    ({ids_cmd,cpu_data_low,cpu_data_high}),
 
       // --- HW regs interface
       .hardware_regs    ({matches,pattern_low,pattern_high}),
@@ -174,69 +173,43 @@ module ids
    
    always @(*) begin
       state_next = state;
-      header_counter_next = header_counter;
       in_fifo_rd_en = 0;
-      out_wr_int_next = 0;
       end_of_pkt_next = end_of_pkt;
       begin_pkt_next = begin_pkt;
       
-         
-         case(state)
-
-            START: begin
-               if (!in_fifo_empty && out_rdy) begin
-                  out_wr_int_next = 1; //9.6
-                  in_fifo_rd_en = 1; //9.6
-                  if (in_fifo_ctrl_p != 0) begin
-                     state_next = HEADER;
-                     begin_pkt_next = 1;
-                     end_of_pkt_next = 0;   // takes matcher out of reset
-                  end
-               end
-            end
-
-            HEADER: begin
-               if (!in_fifo_empty && out_rdy) begin
-                  out_wr_int_next = 1; //9.6
-                  in_fifo_rd_en = 1; //9.6
-                  begin_pkt_next = 0;
-                  if (in_fifo_ctrl_p == 0) begin
-                     header_counter_next = header_counter + 1'b1;
-                     if (header_counter_next == 3) begin
-                     state_next = PAYLOAD;
-                     end
-                  end
-               end
-            end
-
-            PAYLOAD: begin
-               if (!in_fifo_empty && out_rdy) begin
-                     out_wr_int_next = 1; //9.8
-                     in_fifo_rd_en = 1; //9.8
-                  if (in_fifo_ctrl_p != 0) begin
-                     state_next = CPU_PROC;
-                     header_counter_next = 0;
-                  end 
-               end
-            end
-            
-            CPU_PROC: begin //9.7
-               out_wr_int_next = 0; //9.8
-               in_fifo_rd_en = 0; //9.8
-               if(ids_cmd[0]) begin
-                  end_of_pkt_next = 1;
-                  state_next = START;
-               end else begin
+      case(state)
+         START: begin
+            if (!in_fifo_empty && out_rdy) begin
+               in_fifo_rd_en = 1; 
+               if (in_fifo_ctrl_p != 0) begin
+                  state_next = PACEKT;
+                  begin_pkt_next = 1;
                   end_of_pkt_next = 0;
                end
             end
-         endcase // case(state)
+         end
+
+         PACEKT: begin
+            if (!in_fifo_empty && out_rdy) begin
+               in_fifo_rd_en = 1; 
+               begin_pkt_next = 0;
+               if (in_fifo_ctrl_p != 0) begin
+                  state_next = CPU_PROC;
+               end 
+            end
+         end
+         
+         CPU_PROC: begin //9.7
+            if(ids_cmd[0]) begin
+               end_of_pkt_next = 1;
+               state_next = START;
+            end 
+         end
+      endcase // case(state)
    end // always @ (*)
    
    always @(posedge clk) begin
       if(reset) begin
-         //matches <= 0;
-         header_counter <= 0;
          state <= START;
          begin_pkt <= 0;
          end_of_pkt <= 0;
@@ -244,14 +217,12 @@ module ids
 			in_fifo_data <= 0;
       end
       else begin
-         header_counter <= header_counter_next;
          state <= state_next;
          begin_pkt <= begin_pkt_next;
          end_of_pkt <= end_of_pkt_next;
 			in_fifo_ctrl <= in_fifo_ctrl_p;
 			in_fifo_data <= in_fifo_data_p;
-			out_wr_int <= out_wr_int_next;
-         counter <= 0;
+			out_wr_int <= in_fifo_rd_en; // clean up logic, the out_wr signal must have a cycle latency after in_fifo_rd_en
       end // else: !if(reset)
    end // always @ (posedge clk)   
 

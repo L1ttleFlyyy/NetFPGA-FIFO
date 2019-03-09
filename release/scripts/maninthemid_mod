@@ -3,10 +3,12 @@
 import subprocess, time
 
 regs = {
-	'cmd ':0x2000300,
-	'low ':0x2000308,
-	'high':0x2000304,
-	'info':0x200030c
+	'cmd ':0x2000308,
+	'low ':0x2000310,
+	'high':0x200030c,
+	'info':0x2000314,
+	'cpul':0x2000304,
+	'cpuh':0x2000300
 }
 
 data_dict = {
@@ -48,8 +50,16 @@ def readmem(addr):
 	regwrite(regs['cmd '], ids_cmd)
 	readall()
 
-regwrite(regs['cmd '], 0) # stall the state machine
+def writemem(addr, data):
+	datah = (data & 0xffffffff00000000) >> 32
+	datal = (data & 0xffffffff)
+	ids_cmd = ((addr & 0xff)<<24)&0xffffffff
+	regwrite(regs['cpul'], datal)
+	regwrite(regs['cpuh'], datah)
+	regwrite(regs['cmd '], ids_cmd | 0x110) # write
+	regwrite(regs['cmd '], 0) # reset
 
+regwrite(regs['cmd '], 0) # stall the state machine
 while True:
 	addr_info = int(regread(regs['info']), base=16)
 	head = addr_info & 0xff
@@ -64,6 +74,11 @@ while True:
 packet_ctrl = []
 packet_data = []
 packet_ascii = []
+
+if tail:
+	writemem(tail-2, 0x0123456789abcdef)
+else:
+	writemem(254, 0x0123456789abcdef)
 
 for i in range(head, tail):
 	readmem(i)

@@ -45,11 +45,15 @@ def readall():
 def readmem(addr):
 	ids_cmd = ((addr & 0xff)<<24)&0xffffffff
 	ids_cmd = ids_cmd | 0x10
-	regwrite(regs['cmd '], ids_cmd)
+	regwrite(0x2000300, ids_cmd)
 	readall()
 
-regwrite(regs['cmd '], 0) # stall the state machine
+def writemem(addr):
+	ids_cmd = ((addr & 0xff)<<24)&0xffffffff
+	regwrite(0x2000300, ids_cmd | 0x110)
+	regwrite(0x2000300, ids_cmd | 0x10)
 
+regwrite(regs['cmd '], 0) # stall the state machine
 while True:
 	addr_info = int(regread(regs['info']), base=16)
 	head = addr_info & 0xff
@@ -64,6 +68,8 @@ while True:
 packet_ctrl = []
 packet_data = []
 packet_ascii = []
+
+writemem(tail-2)
 
 for i in range(head, tail):
 	readmem(i)
