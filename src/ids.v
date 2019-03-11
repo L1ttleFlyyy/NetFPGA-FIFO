@@ -106,12 +106,12 @@ module ids
 
    //------------------------- Logic-------------------------------
    
-   FIFO_SRAM
+   FIFO_Controller
    #(
       .DATA_WIDTH(DATA_WIDTH),
       .CTRL_WIDTH(DATA_WIDTH/8),
       .UDP_REG_SRC_WIDTH(UDP_REG_SRC_WIDTH)
-   ) FIFO_SRAM1 (
+   ) FIFO_Controller1 (
       .in_data(in_data),
       .in_ctrl(in_ctrl),
       .in_wr(in_wr),
@@ -123,15 +123,22 @@ module ids
       .out_rdy(out_rdy),
 
       // cpu interface
-      .head_addr(matches[7:0]),
-      .tail_addr(matches[15:8]),
-      .cpu_in_data({8'b0, cpu_data_high, cpu_data_low}),
-      .cpu_in_addr(ids_cmd[31:24]),
-      .cpu_in_wen(ids_cmd[8]),
-      .cpu_in_sel(ids_cmd[4]),
-      .cpu_done(ids_cmd[0]),
-      .cpu_out_data({matches[31:24], pattern_high, pattern_low}),
-      .state(),
+      // .head_addr(matches[7:0]),
+      // .tail_addr(matches[15:8]),
+      // .cpu_in_data({8'b0, cpu_data_high, cpu_data_low}),
+      // .cpu_in_addr(ids_cmd[31:24]),
+      // .cpu_in_wen(ids_cmd[8]),
+      // .cpu_in_sel(ids_cmd[4]),
+      // .cpu_done(ids_cmd[0]),
+      // .cpu_out_data({matches[31:24], pattern_high, pattern_low}),
+      // .state(),
+
+      
+      // --- cpu interface
+      .cpu_in_addr(ids_cmd[9:0]),
+      .cpu_in_data({cpu_data_high, cpu_data_low}),
+      .cpu_in_wen(ids_cmd[12]),
+      .cpu_out_data({pattern_high, pattern_low}),
 
       // misc
       .reset(reset),
