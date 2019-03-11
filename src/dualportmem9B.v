@@ -38,101 +38,96 @@
 `timescale 1ns/1ps
 
 module dualportmem9B(
-	addra,
-	addrb,
 	clka,
-	clkb,
 	dina,
+	addra,
+	wea,
 	douta,
-	doutb,
-	wea);
+	clkb,
+	dinb,
+	addrb,
+	web,
+	doutb);
 
 
-input [7 : 0] addra;
-input [7 : 0] addrb;
 input clka;
-input clkb;
 input [71 : 0] dina;
+input [7 : 0] addra;
+input [0 : 0] wea;
 output [71 : 0] douta;
+input clkb;
+input [71 : 0] dinb;
+input [7 : 0] addrb;
+input [0 : 0] web;
 output [71 : 0] doutb;
-input wea;
 
 // synthesis translate_off
 
-      BLKMEMDP_V6_3 #(
-		.c_addra_width(8),
-		.c_addrb_width(8),
-		.c_default_data("0"),
-		.c_depth_a(256),
-		.c_depth_b(256),
-		.c_enable_rlocs(0),
-		.c_has_default_data(1),
-		.c_has_dina(1),
-		.c_has_dinb(0),
-		.c_has_douta(1),
-		.c_has_doutb(1),
-		.c_has_ena(0),
-		.c_has_enb(0),
-		.c_has_limit_data_pitch(0),
-		.c_has_nda(0),
-		.c_has_ndb(0),
-		.c_has_rdya(0),
-		.c_has_rdyb(0),
-		.c_has_rfda(0),
-		.c_has_rfdb(0),
-		.c_has_sinita(0),
-		.c_has_sinitb(0),
-		.c_has_wea(1),
-		.c_has_web(0),
-		.c_limit_data_pitch(18),
-		.c_mem_init_file("mif_file_16_1"),
-		.c_pipe_stages_a(0),
-		.c_pipe_stages_b(0),
-		.c_reg_inputsa(0),
-		.c_reg_inputsb(0),
-		.c_sim_collision_check("NONE"),
-		.c_sinita_value("0"),
-		.c_sinitb_value("0"),
-		.c_width_a(72),
-		.c_width_b(72),
-		.c_write_modea(1),
-		.c_write_modeb(0),
-		.c_ybottom_addr("0"),
-		.c_yclka_is_rising(1),
-		.c_yclkb_is_rising(1),
-		.c_yena_is_high(1),
-		.c_yenb_is_high(1),
-		.c_yhierarchy("hierarchy1"),
-		.c_ymake_bmm(0),
-		.c_yprimitive_type("16kx1"),
-		.c_ysinita_is_high(1),
-		.c_ysinitb_is_high(1),
-		.c_ytop_addr("1024"),
-		.c_yuse_single_primitive(0),
-		.c_ywea_is_high(1),
-		.c_yweb_is_high(1),
-		.c_yydisable_warnings(0))
+      BLK_MEM_GEN_V2_8 #(
+		.C_ADDRA_WIDTH(8),
+		.C_ADDRB_WIDTH(8),
+		.C_ALGORITHM(1),
+		.C_BYTE_SIZE(9),
+		.C_COMMON_CLK(0),
+		.C_DEFAULT_DATA("0"),
+		.C_DISABLE_WARN_BHV_COLL(0),
+		.C_DISABLE_WARN_BHV_RANGE(0),
+		.C_FAMILY("virtex2p"),
+		.C_HAS_ENA(0),
+		.C_HAS_ENB(0),
+		.C_HAS_MEM_OUTPUT_REGS_A(0),
+		.C_HAS_MEM_OUTPUT_REGS_B(0),
+		.C_HAS_MUX_OUTPUT_REGS_A(0),
+		.C_HAS_MUX_OUTPUT_REGS_B(0),
+		.C_HAS_REGCEA(0),
+		.C_HAS_REGCEB(0),
+		.C_HAS_SSRA(0),
+		.C_HAS_SSRB(0),
+		.C_INIT_FILE_NAME("no_coe_file_loaded"),
+		.C_LOAD_INIT_FILE(0),
+		.C_MEM_TYPE(2),
+		.C_MUX_PIPELINE_STAGES(0),
+		.C_PRIM_TYPE(1),
+		.C_READ_DEPTH_A(256),
+		.C_READ_DEPTH_B(256),
+		.C_READ_WIDTH_A(72),
+		.C_READ_WIDTH_B(72),
+		.C_SIM_COLLISION_CHECK("ALL"),
+		.C_SINITA_VAL("0"),
+		.C_SINITB_VAL("0"),
+		.C_USE_BYTE_WEA(0),
+		.C_USE_BYTE_WEB(0),
+		.C_USE_DEFAULT_DATA(0),
+		.C_USE_ECC(0),
+		.C_USE_RAMB16BWER_RST_BHV(0),
+		.C_WEA_WIDTH(1),
+		.C_WEB_WIDTH(1),
+		.C_WRITE_DEPTH_A(256),
+		.C_WRITE_DEPTH_B(256),
+		.C_WRITE_MODE_A("READ_FIRST"),
+		.C_WRITE_MODE_B("READ_FIRST"),
+		.C_WRITE_WIDTH_A(72),
+		.C_WRITE_WIDTH_B(72),
+		.C_XDEVICEFAMILY("virtex2p"))
 	inst (
-		.ADDRA(addra),
-		.ADDRB(addrb),
 		.CLKA(clka),
-		.CLKB(clkb),
 		.DINA(dina),
-		.DOUTA(douta),
-		.DOUTB(doutb),
+		.ADDRA(addra),
 		.WEA(wea),
-		.DINB(),
+		.DOUTA(douta),
+		.CLKB(clkb),
+		.DINB(dinb),
+		.ADDRB(addrb),
+		.WEB(web),
+		.DOUTB(doutb),
 		.ENA(),
+		.REGCEA(),
+		.SSRA(),
 		.ENB(),
-		.NDA(),
-		.NDB(),
-		.RFDA(),
-		.RFDB(),
-		.RDYA(),
-		.RDYB(),
-		.SINITA(),
-		.SINITB(),
-		.WEB());
+		.REGCEB(),
+		.SSRB(),
+		.DBITERR(),
+		.SBITERR());
 
 
 // synthesis translate_on

@@ -7,11 +7,11 @@
 // \   \   \/     Version : 10.1.03
 //  \   \         Application : sch2verilog
 //  /   /         Filename : dropfifo.vf
-// /___/   /\     Timestamp : 03/06/2019 21:04:17
+// /___/   /\     Timestamp : 03/10/2019 19:38:43
 // \   \  /  \ 
 //  \___\/\___\ 
 //
-//Command: D:\Xilinx\10.1\ISE\bin\nt\unwrapped\sch2verilog.exe -intstyle ise -family virtex2p -w D:/Users/92011/Desktop/Project9/dropfifo.sch dropfifo.vf
+//Command: C:\Xilinx\10.1\ISE\bin\nt\unwrapped\sch2verilog.exe -intstyle ise -family virtex2p -w C:/ISE_projects/FIFOWrapper/dropfifo.sch dropfifo.vf
 //Design Name: dropfifo
 //Device: virtex2p
 //Purpose:
@@ -327,12 +327,15 @@ module dropfifo(clk,
    wire XLXN_46;
    wire XLXN_134;
    wire [71:0] XLXN_159;
-   wire XLXN_160;
    wire [7:0] XLXN_204;
    wire [71:0] XLXN_205;
+   wire [0:0] XLXN_207;
+   wire [71:0] XLXN_208;
+   wire [0:0] XLXN_209;
    wire [7:0] raddr_DUMMY;
    wire [7:0] waddr_DUMMY;
    
+   assign XLXN_208 = 4'h0;
    assign raddr[7:0] = raddr_DUMMY[7:0];
    assign waddr[7:0] = waddr_DUMMY[7:0];
    CB8CE_MXILINX_dropfifo XLXI_2 (.C(clk), 
@@ -347,7 +350,9 @@ module dropfifo(clk,
                          .clka(clk), 
                          .clkb(clk), 
                          .dina(XLXN_205[71:0]), 
-                         .wea(XLXN_160), 
+                         .dinb(XLXN_208[71:0]), 
+                         .wea(XLXN_207[0]), 
+                         .web(XLXN_209[0]), 
                          .douta(out_sram[71:0]), 
                          .doutb(out_fifo[71:0]));
    reg9B XLXI_4 (.ce(XLXN_17), 
@@ -408,9 +413,10 @@ module dropfifo(clk,
    MUXCY XLXI_55 (.CI(sramwrite), 
                   .DI(XLXN_19), 
                   .S(cpu_sel), 
-                  .O(XLXN_160));
+                  .O(XLXN_207[0]));
    mux8 XLXI_70 (.I0(waddr_DUMMY[7:0]), 
                  .I1(sramaddr[7:0]), 
                  .S(cpu_sel), 
                  .O(XLXN_204[7:0]));
+   GND XLXI_71 (.G(XLXN_209[0]));
 endmodule
