@@ -55,19 +55,6 @@ module ids
    // `LOG2_FUNC
 
    //------------------------- Signals-------------------------------
-   
-   wire [DATA_WIDTH-1:0]         in_fifo_data_p;
-   wire [CTRL_WIDTH-1:0]         in_fifo_ctrl_p;
-	
-   reg [DATA_WIDTH-1:0]          in_fifo_data;
-   reg [CTRL_WIDTH-1:0]          in_fifo_ctrl;
-   
-
-   wire                          in_fifo_nearly_full;
-   wire                          in_fifo_empty;
-
-   reg                           in_fifo_rd_en;
-   reg                           out_wr_int;
 	
    // software registers 
    wire [31:0]                   cpu_data_high;
@@ -78,59 +65,7 @@ module ids
    wire [31:0]                   pattern_high;
    wire [31:0]                   pattern_low;
    wire [31:0]                   matches;
-
-   // internal state
-   reg [1:0]                     state, state_next;
-   reg                           end_of_pkt, end_of_pkt_next;
-   reg                           begin_pkt, begin_pkt_next;
-
-   // local parameter
-   parameter                     START = 2'b00;
-   // parameter                     HEADER = 2'b01;
-   parameter                     PACEKT = 2'b10;
-   parameter                     CPU_PROC = 2'b11;
-
  
-   //------------------------- Local assignments -------------------------------
-
-   assign in_rdy     = !in_fifo_nearly_full;
-   assign matches[23:16] = 8'b0;
-
-   //------------------------- Modules-------------------------------
-
-   fallthrough_small_fifo #(
-      .WIDTH(CTRL_WIDTH+DATA_WIDTH),
-      .MAX_DEPTH_BITS(2)
-   ) input_fifo (
-      .din           ({in_ctrl, in_data}),   // Data in
-      .wr_en         (in_wr),                // Write enable
-      .rd_en         (in_fifo_rd_en),        // Read the next word 
-      .dout          ({in_fifo_ctrl_p, in_fifo_data_p}),
-      .full          (),
-      .nearly_full   (in_fifo_nearly_full),
-      .empty         (in_fifo_empty),
-      .reset         (reset),
-      .clk           (clk)
-   );
-
-   dropfifo drop_fifo (
-      .clk           (clk), 
-      .fiforead      (out_rdy), 
-      .fifowrite     (out_wr_int), 
-      .firstword     (begin_pkt), 
-      .in_fifo       ({in_fifo_ctrl,in_fifo_data}), 
-      .lastword      (end_of_pkt), 
-      .rst           (reset), 
-      .out_fifo      ({out_ctrl,out_data}), 
-      .valid_data    (out_wr),
-      .raddr         (matches[7:0]),
-      .waddr         (matches[15:8]),
-		.out_sram      ({matches[31:24], pattern_high, pattern_low}), // cpu in-out data
-		.in_sram       ({8'b0, cpu_data_high, cpu_data_low}), // cpu input data
-		.sramwrite     (ids_cmd[8]), // 0x00000100
-		.sramaddr      (ids_cmd[31:24]), 
-		.cpu_sel      (ids_cmd[4]) // 0x00000010
-   );
 
    generic_regs
    #( 
@@ -171,59 +106,36 @@ module ids
 
    //------------------------- Logic-------------------------------
    
-   always @(*) begin
-      state_next = state;
-      in_fifo_rd_en = 0;
-      end_of_pkt_next = end_of_pkt;
-      begin_pkt_next = begin_pkt;
-      
-      case(state)
-         START: begin
-            if (!in_fifo_empty && out_rdy) begin
-               in_fifo_rd_en = 1; 
-               if (in_fifo_ctrl_p != 0) begin
-                  state_next = PACEKT;
-                  begin_pkt_next = 1;
-                  end_of_pkt_next = 0;
-               end
-            end
-         end
+   FIFO_SRAM
+   #(
+      .DATA_WIDTH(DATA_WIDTH),
+      .CTRL_WIDTH(DATA_WIDTH/8),
+      .UDP_REG_SRC_WIDTH(UDP_REG_SRC_WIDTH)
+   ) FIFO_SRAM1 (
+      .in_data(in_data),
+      .in_ctrl(in_ctrl),
+      .in_wr(in_wr),
+      .in_rdy(in_rdy),
 
-         PACEKT: begin
-            if (!in_fifo_empty && out_rdy) begin
-               in_fifo_rd_en = 1; 
-               begin_pkt_next = 0;
-               if (in_fifo_ctrl_p != 0) begin
-                  state_next = CPU_PROC;
-               end 
-            end
-         end
-         
-         CPU_PROC: begin //9.7
-            if(ids_cmd[0]) begin
-               end_of_pkt_next = 1;
-               state_next = START;
-            end 
-         end
-      endcase // case(state)
-   end // always @ (*)
-   
-   always @(posedge clk) begin
-      if(reset) begin
-         state <= START;
-         begin_pkt <= 0;
-         end_of_pkt <= 0;
-			in_fifo_ctrl <= 0;
-			in_fifo_data <= 0;
-      end
-      else begin
-         state <= state_next;
-         begin_pkt <= begin_pkt_next;
-         end_of_pkt <= end_of_pkt_next;
-			in_fifo_ctrl <= in_fifo_ctrl_p;
-			in_fifo_data <= in_fifo_data_p;
-			out_wr_int <= in_fifo_rd_en; // clean up logic, the out_wr signal must have a cycle latency after in_fifo_rd_en
-      end // else: !if(reset)
-   end // always @ (posedge clk)   
+      .out_data(out_data),
+      .out_ctrl(out_ctrl),
+      .out_wr(out_wr),
+      .out_rdy(out_rdy),
+
+      // cpu interface
+      .head_addr(matches[7:0]),
+      .tail_addr(matches[15:8]),
+      .cpu_in_data({8'b0, cpu_data_high, cpu_data_low}),
+      .cpu_in_addr(ids_cmd[31:24]),
+      .cpu_in_wen(ids_cmd[8]),
+      .cpu_in_sel(ids_cmd[4]),
+      .cpu_done(ids_cmd[0]),
+      .cpu_out_data({matches[31:24], pattern_high, pattern_low}),
+      .state(),
+
+      // misc
+      .reset(reset),
+      .clk(clk)
+   );
 
 endmodule 
