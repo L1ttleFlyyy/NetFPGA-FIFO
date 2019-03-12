@@ -7,11 +7,11 @@
 // \   \   \/     Version : 10.1.03
 //  \   \         Application : sch2verilog
 //  /   /         Filename : dropfifo.vf
-// /___/   /\     Timestamp : 03/10/2019 19:38:43
+// /___/   /\     Timestamp : 03/11/2019 17:49:11
 // \   \  /  \ 
 //  \___\/\___\ 
 //
-//Command: C:\Xilinx\10.1\ISE\bin\nt\unwrapped\sch2verilog.exe -intstyle ise -family virtex2p -w C:/ISE_projects/FIFOWrapper/dropfifo.sch dropfifo.vf
+//Command: D:\Xilinx\10.1\ISE\bin\nt\unwrapped\sch2verilog.exe -intstyle ise -family virtex2p -w D:/Users/92011/Desktop/Lab9CleanUp/dropfifo.sch dropfifo.vf
 //Design Name: dropfifo
 //Device: virtex2p
 //Purpose:
@@ -330,12 +330,11 @@ module dropfifo(clk,
    wire [7:0] XLXN_204;
    wire [71:0] XLXN_205;
    wire [0:0] XLXN_207;
-   wire [71:0] XLXN_208;
    wire [0:0] XLXN_209;
+   wire [71:0] XLXN_210;
    wire [7:0] raddr_DUMMY;
    wire [7:0] waddr_DUMMY;
    
-   assign XLXN_208 = 4'h0;
    assign raddr[7:0] = raddr_DUMMY[7:0];
    assign waddr[7:0] = waddr_DUMMY[7:0];
    CB8CE_MXILINX_dropfifo XLXI_2 (.C(clk), 
@@ -350,7 +349,7 @@ module dropfifo(clk,
                          .clka(clk), 
                          .clkb(clk), 
                          .dina(XLXN_205[71:0]), 
-                         .dinb(XLXN_208[71:0]), 
+                         .dinb(XLXN_210[71:0]), 
                          .wea(XLXN_207[0]), 
                          .web(XLXN_209[0]), 
                          .douta(out_sram[71:0]), 
@@ -419,4 +418,76 @@ module dropfifo(clk,
                  .S(cpu_sel), 
                  .O(XLXN_204[7:0]));
    GND XLXI_71 (.G(XLXN_209[0]));
+   GND XLXI_72_0 (.G(XLXN_210[0]));
+   GND XLXI_72_1 (.G(XLXN_210[1]));
+   GND XLXI_72_2 (.G(XLXN_210[2]));
+   GND XLXI_72_3 (.G(XLXN_210[3]));
+   GND XLXI_72_4 (.G(XLXN_210[4]));
+   GND XLXI_72_5 (.G(XLXN_210[5]));
+   GND XLXI_72_6 (.G(XLXN_210[6]));
+   GND XLXI_72_7 (.G(XLXN_210[7]));
+   GND XLXI_72_8 (.G(XLXN_210[8]));
+   GND XLXI_72_9 (.G(XLXN_210[9]));
+   GND XLXI_72_10 (.G(XLXN_210[10]));
+   GND XLXI_72_11 (.G(XLXN_210[11]));
+   GND XLXI_72_12 (.G(XLXN_210[12]));
+   GND XLXI_72_13 (.G(XLXN_210[13]));
+   GND XLXI_72_14 (.G(XLXN_210[14]));
+   GND XLXI_72_15 (.G(XLXN_210[15]));
+   GND XLXI_72_16 (.G(XLXN_210[16]));
+   GND XLXI_72_17 (.G(XLXN_210[17]));
+   GND XLXI_72_18 (.G(XLXN_210[18]));
+   GND XLXI_72_19 (.G(XLXN_210[19]));
+   GND XLXI_72_20 (.G(XLXN_210[20]));
+   GND XLXI_72_21 (.G(XLXN_210[21]));
+   GND XLXI_72_22 (.G(XLXN_210[22]));
+   GND XLXI_72_23 (.G(XLXN_210[23]));
+   GND XLXI_72_24 (.G(XLXN_210[24]));
+   GND XLXI_72_25 (.G(XLXN_210[25]));
+   GND XLXI_72_26 (.G(XLXN_210[26]));
+   GND XLXI_72_27 (.G(XLXN_210[27]));
+   GND XLXI_72_28 (.G(XLXN_210[28]));
+   GND XLXI_72_29 (.G(XLXN_210[29]));
+   GND XLXI_72_30 (.G(XLXN_210[30]));
+   GND XLXI_72_31 (.G(XLXN_210[31]));
+   GND XLXI_72_32 (.G(XLXN_210[32]));
+   GND XLXI_72_33 (.G(XLXN_210[33]));
+   GND XLXI_72_34 (.G(XLXN_210[34]));
+   GND XLXI_72_35 (.G(XLXN_210[35]));
+   GND XLXI_72_36 (.G(XLXN_210[36]));
+   GND XLXI_72_37 (.G(XLXN_210[37]));
+   GND XLXI_72_38 (.G(XLXN_210[38]));
+   GND XLXI_72_39 (.G(XLXN_210[39]));
+   GND XLXI_72_40 (.G(XLXN_210[40]));
+   GND XLXI_72_41 (.G(XLXN_210[41]));
+   GND XLXI_72_42 (.G(XLXN_210[42]));
+   GND XLXI_72_43 (.G(XLXN_210[43]));
+   GND XLXI_72_44 (.G(XLXN_210[44]));
+   GND XLXI_72_45 (.G(XLXN_210[45]));
+   GND XLXI_72_46 (.G(XLXN_210[46]));
+   GND XLXI_72_47 (.G(XLXN_210[47]));
+   GND XLXI_72_48 (.G(XLXN_210[48]));
+   GND XLXI_72_49 (.G(XLXN_210[49]));
+   GND XLXI_72_50 (.G(XLXN_210[50]));
+   GND XLXI_72_51 (.G(XLXN_210[51]));
+   GND XLXI_72_52 (.G(XLXN_210[52]));
+   GND XLXI_72_53 (.G(XLXN_210[53]));
+   GND XLXI_72_54 (.G(XLXN_210[54]));
+   GND XLXI_72_55 (.G(XLXN_210[55]));
+   GND XLXI_72_56 (.G(XLXN_210[56]));
+   GND XLXI_72_57 (.G(XLXN_210[57]));
+   GND XLXI_72_58 (.G(XLXN_210[58]));
+   GND XLXI_72_59 (.G(XLXN_210[59]));
+   GND XLXI_72_60 (.G(XLXN_210[60]));
+   GND XLXI_72_61 (.G(XLXN_210[61]));
+   GND XLXI_72_62 (.G(XLXN_210[62]));
+   GND XLXI_72_63 (.G(XLXN_210[63]));
+   GND XLXI_72_64 (.G(XLXN_210[64]));
+   GND XLXI_72_65 (.G(XLXN_210[65]));
+   GND XLXI_72_66 (.G(XLXN_210[66]));
+   GND XLXI_72_67 (.G(XLXN_210[67]));
+   GND XLXI_72_68 (.G(XLXN_210[68]));
+   GND XLXI_72_69 (.G(XLXN_210[69]));
+   GND XLXI_72_70 (.G(XLXN_210[70]));
+   GND XLXI_72_71 (.G(XLXN_210[71]));
 endmodule

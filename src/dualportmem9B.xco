@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version K.39
-# Date: Mon Mar 11 02:21:49 2019
+# Date: Tue Mar 12 00:45:46 2019
 #
 ##############################################################
 #
@@ -46,7 +46,7 @@ CSET disable_out_of_range_warnings=false
 CSET ecc=false
 CSET enable_a=Always_Enabled
 CSET enable_b=Always_Enabled
-CSET fill_remaining_memory_locations=false
+CSET fill_remaining_memory_locations=true
 CSET load_init_file=false
 CSET memory_type=True_Dual_Port_RAM
 CSET operating_mode_a=READ_FIRST
@@ -74,5 +74,5 @@ CSET write_width_a=72
 CSET write_width_b=72
 # END Parameters
 GENERATE
-# CRC: bb03866d
+# CRC: 5af6df30
 

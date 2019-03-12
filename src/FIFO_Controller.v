@@ -43,9 +43,12 @@ module FIFO_Controller
    );
    wire[1:0] state;
 
-   wire packet_rdy;
+   wire packet_rdy_next;
+   reg packet_rdy;
    wire cpu_in_sel;
-   wire [7:0] head_addr, tail_addr;
+   wire [7:0] head_addr_next, tail_addr_next;
+   reg [7:0] head_addr, tail_addr;
+   reg [9:0] cpu_in_addr_p;
    wire [71:0] sram_out_data;
    
    reg cpu_done;
@@ -55,7 +58,15 @@ module FIFO_Controller
    always@(posedge clk) begin
       if(reset) begin
          cpu_done <= 0;
+         head_addr <= 0;
+         tail_addr <= 0;
+         packet_rdy <= 0;
+         cpu_in_addr_p <= 0;
       end else begin
+         head_addr <= head_addr_next;
+         tail_addr <= tail_addr_next;
+         packet_rdy <= packet_rdy_next;
+         cpu_in_addr_p <= cpu_in_addr;
          // 768: cpu_done
          if (cpu_in_wen&&(cpu_in_addr[9:8]==2'b11)&&(cpu_in_addr[1:0]==2'b00)) begin
             cpu_done <= 1;
@@ -66,23 +77,23 @@ module FIFO_Controller
    end
 
    //------------------------- Signals-------------------------------
-   assign packet_rdy = (state == 2'b11);
+   assign packet_rdy_next = (state == 2'b11);
    assign cpu_in_sel = (cpu_in_addr[9:8] == 2'b10);
 
    always@(*)begin
       if(~cpu_in_wen) begin
-         if (cpu_in_addr[9:8]==2'b11) begin
-            case(cpu_in_addr[1:0])
-               2'b01: // packet_rdy 769
+         if (cpu_in_addr_p[9:8]==2'b11) begin
+            case(cpu_in_addr_p[1:0])
+               2'b01: // packet_rdy_next 769
                   cpu_out_data = {63'b0, packet_rdy};
-               2'b10: // head_addr 770
-                  cpu_out_data = {56'b0, head_addr};
-               2'b11: // tail_addr 771
-                  cpu_out_data = {56'b0, tail_addr};
+               2'b10: // head_addr_next 770
+                  cpu_out_data = {56'b10, head_addr};
+               2'b11: // tail_addr_next 771
+                  cpu_out_data = {56'b10, tail_addr};
                default:
                   cpu_out_data = 0;
             endcase
-         end else if (cpu_in_addr[9:8]==2'b10) begin
+         end else if (cpu_in_addr_p[9:8]==2'b10) begin
             cpu_out_data = sram_out_data[63:0];
          end else begin
             cpu_out_data = 0;
@@ -109,8 +120,8 @@ module FIFO_Controller
       .out_rdy(out_rdy),
 
       // cpu interface
-      .head_addr(head_addr),
-      .tail_addr(tail_addr),
+      .head_addr(head_addr_next),
+      .tail_addr(tail_addr_next),
       .cpu_in_data({8'b0, cpu_in_data}),
       .cpu_in_addr(cpu_in_addr[7:0]),
       .cpu_in_wen(cpu_in_sel & cpu_in_wen),

@@ -64,9 +64,9 @@ module FIFO_SRAM
    reg                           begin_pkt, begin_pkt_next;
 
    // local parameter
-   parameter                     START = 2'b00;
-   parameter                     PACEKT = 2'b10;
-   parameter                     CPU_PROC = 2'b11;
+   localparam                     START = 2'b00;
+   localparam                     PACEKT = 2'b10;
+   localparam                     CPU_PROC = 2'b11;
 
  
    //------------------------- Local assignments -------------------------------
@@ -89,25 +89,26 @@ module FIFO_SRAM
       .reset         (reset),
       .clk           (clk)
    );
-
-   dropfifo drop_fifo (
-      .clk           (clk), 
-      .fiforead      (out_rdy), 
-      .fifowrite     (out_wr_int), 
-      .firstword     (begin_pkt), 
-      .in_fifo       ({in_fifo_ctrl,in_fifo_data}), 
-      .lastword      (end_of_pkt), 
-      .rst           (reset), 
-      .out_fifo      ({out_ctrl,out_data}), 
-      .valid_data    (out_wr),
-      .raddr         (head_addr),
-      .waddr         (tail_addr),
-		.out_sram      (cpu_out_data), // cpu in-out data
-		.in_sram       (cpu_in_data), // cpu input data
-		.sramwrite     (cpu_in_wen), // 0x00000100
-		.sramaddr      (cpu_in_addr), 
-		.cpu_sel       (cpu_in_sel) // 0x00000010
+   
+   dropfifo dfifo1 (
+		.cpu_sel(cpu_in_sel), 
+		.lastword(end_of_pkt), 
+		.firstword(begin_pkt), 
+		.fifowrite(out_wr_int), 
+		.valid_data(out_wr), 
+		.fiforead(out_rdy), 
+		.clk(clk), 
+		.rst(reset), 
+		.in_fifo({in_fifo_ctrl,in_fifo_data}), 
+		.raddr(head_addr), 
+		.waddr(tail_addr), 
+		.in_sram(cpu_in_data), 
+		.sramwrite(cpu_in_wen), 
+		.sramaddr(cpu_in_addr), 
+		.out_sram(cpu_out_data), 
+		.out_fifo({out_ctrl,out_data})
    );
+
    
    always @(*) begin
       state_next = state;
