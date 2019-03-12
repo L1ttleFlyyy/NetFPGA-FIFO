@@ -21,12 +21,10 @@ BEGIN SCHEMATIC
         SIGNAL rst
         SIGNAL XLXN_17
         SIGNAL in_fifo(71:0)
-        SIGNAL out_sram(71:0)
         SIGNAL XLXN_7
         SIGNAL XLXN_134
         SIGNAL XLXN_19
         SIGNAL XLXN_159(71:0)
-        SIGNAL XLXN_160
         SIGNAL raddr(7:0)
         SIGNAL waddr(7:0)
         SIGNAL in_sram(71:0)
@@ -34,10 +32,11 @@ BEGIN SCHEMATIC
         SIGNAL XLXN_205(71:0)
         SIGNAL sramwrite
         SIGNAL sramaddr(7:0)
-        SIGNAL out_fifo(71:0)
         SIGNAL XLXN_207(0:0)
-        SIGNAL XLXN_208(71:0)
         SIGNAL XLXN_209(0:0)
+        SIGNAL out_sram(71:0)
+        SIGNAL out_fifo(71:0)
+        SIGNAL XLXN_210(71:0)
         PORT Input cpu_sel
         PORT Input lastword
         PORT Input firstword
@@ -47,12 +46,12 @@ BEGIN SCHEMATIC
         PORT Input clk
         PORT Input rst
         PORT Input in_fifo(71:0)
-        PORT Output out_sram(71:0)
         PORT Output raddr(7:0)
         PORT Output waddr(7:0)
         PORT Input in_sram(71:0)
         PORT Input sramwrite
         PORT Input sramaddr(7:0)
+        PORT Output out_sram(71:0)
         PORT Output out_fifo(71:0)
         BEGIN BLOCKDEF cb8ce
             TIMESTAMP 2000 1 1 10 10 10
@@ -70,8 +69,8 @@ BEGIN SCHEMATIC
             RECTANGLE N 64 -320 320 -64 
         END BLOCKDEF
         BEGIN BLOCKDEF dualportmem9B
-            TIMESTAMP 2019 3 11 2 24 21
-            RECTANGLE N 32 32 256 576 
+            TIMESTAMP 2019 3 12 0 46 50
+            RECTANGLE N 32 32 240 576 
             BEGIN LINE W 0 80 32 80 
             END LINE
             BEGIN LINE W 0 112 32 112 
@@ -86,13 +85,13 @@ BEGIN SCHEMATIC
             BEGIN LINE W 0 464 32 464 
             END LINE
             LINE N 0 528 32 528 
-            BEGIN LINE W 288 80 256 80 
+            BEGIN LINE W 272 80 240 80 
             END LINE
-            BEGIN LINE W 288 336 256 336 
+            BEGIN LINE W 272 336 240 336 
             END LINE
         END BLOCKDEF
         BEGIN BLOCKDEF reg9B
-            TIMESTAMP 2019 3 11 2 17 42
+            TIMESTAMP 2019 3 11 21 34 36
             RECTANGLE N 64 -256 320 0 
             LINE N 64 -160 0 -160 
             LINE N 64 -96 0 -96 
@@ -178,7 +177,7 @@ BEGIN SCHEMATIC
             LINE N 192 -32 64 -32 
         END BLOCKDEF
         BEGIN BLOCKDEF mux72
-            TIMESTAMP 2019 3 11 2 18 1
+            TIMESTAMP 2019 3 11 21 36 11
             RECTANGLE N 64 -192 320 0 
             LINE N 64 -160 0 -160 
             RECTANGLE N 0 -108 64 -84 
@@ -189,7 +188,7 @@ BEGIN SCHEMATIC
             LINE N 320 -160 384 -160 
         END BLOCKDEF
         BEGIN BLOCKDEF mux8
-            TIMESTAMP 2019 3 11 2 18 7
+            TIMESTAMP 2019 3 11 21 36 15
             RECTANGLE N 64 -192 320 0 
             LINE N 64 -160 0 -160 
             RECTANGLE N 0 -108 64 -84 
@@ -218,11 +217,6 @@ BEGIN SCHEMATIC
             LINE N 88 -64 40 -64 
             LINE N 64 -64 64 -80 
             LINE N 64 -128 64 -96 
-        END BLOCKDEF
-        BEGIN BLOCKDEF constant
-            TIMESTAMP 2006 1 1 10 10 10
-            RECTANGLE N 0 0 112 64 
-            LINE N 144 32 112 32 
         END BLOCKDEF
         BEGIN BLOCK XLXI_13 fd
             PIN C clk
@@ -286,7 +280,7 @@ BEGIN SCHEMATIC
             PIN wea(0:0) XLXN_207(0:0)
             PIN clka clk
             PIN addrb(7:0) raddr(7:0)
-            PIN dinb(71:0) XLXN_208(71:0)
+            PIN dinb(71:0) XLXN_210(71:0)
             PIN web(0:0) XLXN_209(0:0)
             PIN clkb clk
             PIN douta(71:0) out_sram(71:0)
@@ -332,13 +326,8 @@ BEGIN SCHEMATIC
         BEGIN BLOCK XLXI_71 gnd
             PIN G XLXN_209(0:0)
         END BLOCK
-        BEGIN BLOCK XLXI_72 constant
-            BEGIN ATTR CValue "0"
-                DELETE all:1 sym:0
-                EDITNAME all:1 sch:0
-                VALUETYPE BitVector 32 Hexadecimal
-            END ATTR
-            PIN O XLXN_208(71:0)
+        BEGIN BLOCK XLXI_72(71:0) gnd
+            PIN G XLXN_210(71:0)
         END BLOCK
     END NETLIST
     BEGIN SHEET 1 3520 2720
@@ -392,9 +381,6 @@ BEGIN SCHEMATIC
         BEGIN BRANCH in_fifo(71:0)
             WIRE 1744 896 1952 896
         END BRANCH
-        BEGIN BRANCH out_sram(71:0)
-            WIRE 3296 1744 3312 1744
-        END BRANCH
         INSTANCE XLXI_5 1120 2160 R0
         INSTANCE XLXI_7 1536 2064 R0
         BEGIN BRANCH XLXN_7
@@ -422,7 +408,6 @@ BEGIN SCHEMATIC
         IOMARKER 3136 656 raddr(7:0) R0 28
         IOMARKER 80 2528 rst R180 28
         IOMARKER 3328 2304 valid_data R0 28
-        IOMARKER 3312 1744 out_sram(71:0) R0 28
         IOMARKER 880 928 fifowrite R180 28
         IOMARKER 880 1664 fiforead R180 28
         BEGIN BRANCH in_sram(71:0)
@@ -526,10 +511,6 @@ BEGIN SCHEMATIC
         END BRANCH
         BEGIN INSTANCE XLXI_3 3008 1664 R0
         END INSTANCE
-        BEGIN BRANCH out_fifo(71:0)
-            WIRE 3296 2000 3312 2000
-        END BRANCH
-        IOMARKER 3312 2000 out_fifo(71:0) R0 28
         BEGIN BRANCH XLXN_207(0:0)
             WIRE 2880 1744 2928 1744
             WIRE 2928 1744 2928 1872
@@ -562,14 +543,22 @@ BEGIN SCHEMATIC
             WIRE 2960 1936 3008 1936
         END BRANCH
         INSTANCE XLXI_71 2928 2464 R0
-        BEGIN BRANCH XLXN_208(71:0)
-            WIRE 2912 2032 3008 2032
-        END BRANCH
-        BEGIN INSTANCE XLXI_72 2768 2000 R0
-        END INSTANCE
         BEGIN BRANCH XLXN_209(0:0)
             WIRE 2992 2128 3008 2128
             WIRE 2992 2128 2992 2336
+        END BRANCH
+        BEGIN BRANCH out_sram(71:0)
+            WIRE 3280 1744 3296 1744
+        END BRANCH
+        BEGIN BRANCH out_fifo(71:0)
+            WIRE 3280 2000 3296 2000
+        END BRANCH
+        IOMARKER 3296 1744 out_sram(71:0) R0 28
+        IOMARKER 3296 2000 out_fifo(71:0) R0 28
+        INSTANCE XLXI_72(71:0) 2800 2464 R0
+        BEGIN BRANCH XLXN_210(71:0)
+            WIRE 2864 2032 3008 2032
+            WIRE 2864 2032 2864 2336
         END BRANCH
     END SHEET
 END SCHEMATIC

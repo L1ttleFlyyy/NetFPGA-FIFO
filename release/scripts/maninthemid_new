@@ -1,0 +1,110 @@
+#!/usr/bin/python
+
+import subprocess, time, sys
+
+regs = {
+	'cmd ':0x2000308,
+	'low ':0x2000310,
+	'high':0x200030c,
+	'info':0x2000314,
+	'cpul':0x2000304,
+	'cpuh':0x2000300
+}
+
+def regread(addr):
+    process = subprocess.Popen(["regread", str(addr)], stdout=subprocess.PIPE)
+    out, err = process.communicate()
+    data = out.split()
+    return data[3]
+
+def regwrite(addr, data):
+    addr = addr & 0xffffffff
+    data = data & 0xffffffff
+    process = subprocess.Popen(["regwrite", str(addr), str(data)], stdout=subprocess.PIPE)
+    out,err = process.communicate()
+
+def readfifo(addr):
+	regwrite(regs['cmd '], addr)
+	datal = regread(regs['low '])
+	datah = regread(regs['high'])
+	return datah[2:] + datal[2:]
+
+def writefifo(addr, datah, datal):
+	regwrite(regs['cmd '], addr)
+	regwrite(regs['cpul'], datal)
+	regwrite(regs['cpuh'], datah)
+	regwrite(regs['cmd '], addr+0x1000)
+	regwrite(regs['cmd '], 0)
+
+def cpu_done(value):
+	assert value == 0 or value == 1
+	regwrite(regs['cpul'], value)
+	regwrite(regs['cpuh'], 0)
+	regwrite(regs['cmd '], 768+0x1000)
+	# regwrite(regs['cmd '], 0)
+
+def polling():
+	regwrite(regs['cmd '], 769)
+	rdy = regread(regs['low '])
+	regwrite(regs['cmd '], 0)
+	return int(rdy,base=16)
+
+def get_head():
+	regwrite(regs['cmd '], 770)
+	data = regread(regs['low '])
+	regwrite(regs['cmd '], 0)
+	return int(data,base=16)
+
+def get_tail():
+	regwrite(regs['cmd '], 771)
+	data = regread(regs['low '])
+	regwrite(regs['cmd '], 0)
+	return int(data,base=16)
+
+modify = False
+
+if len(sys.argv) > 1:
+	modify = True
+	# newstr = sys.argv[1]
+	# newstr = newstr.encode("hex") # asiic to hex
+	# if len(newstr) < 16:
+	# 	newstr = newstr.zfill(16)
+	# elif len(newstr) > 16:
+	# 	newstr = newstr[]
+
+cpu_done(0) # stall packet transfer
+
+while True:
+	if polling():
+		break
+	time.sleep(0.5)
+
+head = get_head()
+tail = get_tail()
+
+if tail < head:
+	tail += 256
+
+packet_len = tail - head
+	# writefifo(tail-2, int(newstr[:8],base=16), int(newstr[8:], base=16))
+
+packet_hex = []
+packet_ascii = []
+for i in range(head, tail):
+	hexstr = readfifo(i)
+	packet_hex.append(hexstr)
+	packet_ascii.append(hexstr.decode("hex"))
+
+if modify:
+	hexstr = packet_hex[packet_len-2]
+	hexl = hexstr[8:]
+	hexh = hexstr[:8]
+	writefifo(tail-2, int(hexl,base=16), int(hexh, base=16))
+
+cpu_done(1) # let packets go
+
+print("packet address: " + str(head) + " -- " + str(tail))
+print("packet length: " + str(packet_len))
+print('------data------ ------ascii-----')
+for i in range(packet_len):
+	print(packet_hex[i] + "  " +packet_ascii[i])
