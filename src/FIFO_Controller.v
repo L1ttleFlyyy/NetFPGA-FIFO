@@ -49,6 +49,7 @@ module FIFO_Controller
    wire [7:0] head_addr_next, tail_addr_next;
    reg [7:0] head_addr, tail_addr;
    reg [9:0] cpu_in_addr_p;
+   reg cpu_in_wen_p;
    wire [71:0] sram_out_data;
    
    reg cpu_done;
@@ -62,11 +63,13 @@ module FIFO_Controller
          tail_addr <= 0;
          packet_rdy <= 0;
          cpu_in_addr_p <= 0;
+		 cpu_in_wen_p <= 0;
       end else begin
          head_addr <= head_addr_next;
          tail_addr <= tail_addr_next;
          packet_rdy <= packet_rdy_next;
          cpu_in_addr_p <= cpu_in_addr;
+		 cpu_in_wen_p <= cpu_in_wen;
          // 768: cpu_done
          if (cpu_in_wen&&(cpu_in_addr[9:8]==2'b11)&&(cpu_in_addr[1:0]==2'b00)) begin
             cpu_done <= 1;
@@ -81,7 +84,7 @@ module FIFO_Controller
    assign cpu_in_sel = (cpu_in_addr[9:8] == 2'b10);
 
    always@(*)begin
-      if(~cpu_in_wen) begin
+      if(~cpu_in_wen_p) begin
          if (cpu_in_addr_p[9:8]==2'b11) begin
             case(cpu_in_addr_p[1:0])
                2'b01: // packet_rdy_next 769
